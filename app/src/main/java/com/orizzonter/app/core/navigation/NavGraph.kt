@@ -7,12 +7,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.orizzonter.app.core.security.AuthManager
 import com.orizzonter.app.features.auth.*
 import com.orizzonter.app.features.auth.viewmodels.AuthViewModel
 import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
 import com.orizzonter.app.features.home.HomeScreen
-import com.orizzonter.app.features.home.screens.settings.SettingsScreen
 import com.orizzonter.app.features.onboarding.OnboardingScreen
 import com.orizzonter.app.features.splash.SplashScreen
 
@@ -25,10 +23,10 @@ fun AppNavGraph(context: Context) {
     )
 
     val startDestination = remember {
-        if (authViewModel.getAuthState().value is AuthManager.AuthState.Authenticated) {
-            "home"
+        if (authViewModel.getAuthState().value is com.orizzonter.app.core.security.AuthManager.AuthState.Authenticated) {
+            AppDestination.Home.route
         } else {
-            "splash"
+            AppDestination.Splash.route
         }
     }
 
@@ -36,58 +34,44 @@ fun AppNavGraph(context: Context) {
         navController = navController,
         startDestination = startDestination
     ) {
-        // Splash screen
-        composable("splash") {
-            SplashScreen(navController)
+        composable(AppDestination.Splash.route) {
+            SplashScreen(navController = navController)
         }
 
-        // Onboarding
-        composable("onboarding") {
-            OnboardingScreen(navController)
+        composable(AppDestination.Onboarding.route) {
+            OnboardingScreen(navController = navController)
         }
 
-        // Login screen
-        composable("login") {
-            LoginScreen(
-                navController = navController
-            )
+        composable(AppDestination.Login.route) {
+            LoginScreen(navController = navController)
         }
 
-        // Create account screen
-        composable("create_account") {
-            CreateAccountScreen(
-                navController = navController
-            )
+        composable(AppDestination.CreateAccount.route) {
+            CreateAccountScreen(navController = navController)
         }
 
-        // Forgot password screen
-        composable("forgot_password") {
-            ForgotPasswordScreen(navController)
+        composable(AppDestination.ForgotPassword.route) {
+            ForgotPasswordScreen(navController = navController)
         }
 
-        // Home screen
-        composable("home") {
+        composable(AppDestination.Home.route) {
             HomeScreen(
                 onLogout = {
                     authViewModel.logout()
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
+                    navController.navigate(AppDestination.Login.route) {
+                        popUpTo(AppDestination.Home.route) { inclusive = true }
                     }
                 }
             )
         }
-
-        // Settings screen (añadido)
-        composable("settings") {
-            SettingsScreen(
-                onLogout = {
-                    authViewModel.logout()
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                },
-                authViewModel = authViewModel
-            )
-        }
     }
+}
+
+sealed class AppDestination(val route: String) {
+    object Splash : AppDestination("splash")
+    object Onboarding : AppDestination("onboarding")
+    object Login : AppDestination("login")
+    object CreateAccount : AppDestination("create_account")
+    object ForgotPassword : AppDestination("forgot_password")
+    object Home : AppDestination("home")
 }

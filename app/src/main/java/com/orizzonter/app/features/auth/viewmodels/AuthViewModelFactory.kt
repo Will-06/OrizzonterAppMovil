@@ -1,13 +1,18 @@
-// Archivo: AuthViewModelFactory.kt (en el mismo paquete del ViewModel)
-
 package com.orizzonter.app.features.auth.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
-class AuthViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class AuthViewModelFactory(
+    private val context: Context
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return AuthViewModel(context) as T
+        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+            return AuthViewModel(context) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

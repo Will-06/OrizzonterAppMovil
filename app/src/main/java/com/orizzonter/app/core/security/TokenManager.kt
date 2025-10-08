@@ -4,7 +4,15 @@ import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
-class TokenManager(private val context: Context) {
+class TokenManager(
+    private val context: Context
+) {
+    companion object {
+        private const val PREFS_NAME = "secure_auth_prefs"
+        private const val KEY_JWT_TOKEN = "jwt_token"
+        private const val KEY_USER_EMAIL = "user_email"
+        private const val KEY_USER_NAME = "user_name"
+    }
 
     private val sharedPreferences by lazy {
         val masterKey = MasterKey.Builder(context)
@@ -13,7 +21,7 @@ class TokenManager(private val context: Context) {
 
         EncryptedSharedPreferences.create(
             context,
-            "secure_auth_prefs",
+            PREFS_NAME,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
@@ -22,23 +30,23 @@ class TokenManager(private val context: Context) {
 
     fun saveAuthData(token: String, userEmail: String, userName: String) {
         sharedPreferences.edit().apply {
-            putString("jwt_token", token)
-            putString("user_email", userEmail)
-            putString("user_name", userName)
+            putString(KEY_JWT_TOKEN, token)
+            putString(KEY_USER_EMAIL, userEmail)
+            putString(KEY_USER_NAME, userName)
             apply()
         }
     }
 
     fun getToken(): String? {
-        return sharedPreferences.getString("jwt_token", null)
+        return sharedPreferences.getString(KEY_JWT_TOKEN, null)
     }
 
     fun getUserEmail(): String? {
-        return sharedPreferences.getString("user_email", null)
+        return sharedPreferences.getString(KEY_USER_EMAIL, null)
     }
 
     fun getUserName(): String? {
-        return sharedPreferences.getString("user_name", null)
+        return sharedPreferences.getString(KEY_USER_NAME, null)
     }
 
     fun clearAuthData() {

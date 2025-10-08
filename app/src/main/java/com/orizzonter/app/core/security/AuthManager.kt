@@ -5,8 +5,9 @@ import com.orizzonter.app.core.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class AuthManager(private val context: Context) {
-
+class AuthManager(
+    private val context: Context
+) {
     private val tokenManager = TokenManager(context)
 
     private val _authState = MutableStateFlow<AuthState>(
@@ -27,7 +28,6 @@ class AuthManager(private val context: Context) {
         _authState.value = AuthState.Authenticated
     }
 
-    // ✅ ESTE MÉTODO DEBE EXISTIR
     fun logout() {
         tokenManager.clearAuthData()
         ApiClient.clearAuthToken()

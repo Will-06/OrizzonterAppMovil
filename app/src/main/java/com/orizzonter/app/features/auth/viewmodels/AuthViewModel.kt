@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val context: Context) : ViewModel() {
+class AuthViewModel(
+    private val context: Context
+) : ViewModel() {
 
     private val authManager = AuthManager(context)
 
@@ -78,17 +80,13 @@ class AuthViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    // ✅ AÑADIR ESTE MÉTODO LOGOUT
     fun logout() {
         viewModelScope.launch {
             try {
-                // Intentar logout en el servidor
                 ApiClient.apiService.logout()
             } catch (e: Exception) {
                 // Ignorar errores de conexión en logout
-                // Lo importante es limpiar los datos locales
             } finally {
-                // Siempre limpiar datos locales
                 authManager.logout()
             }
         }

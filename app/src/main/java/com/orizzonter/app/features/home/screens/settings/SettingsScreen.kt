@@ -34,103 +34,197 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    // Usar el ViewModel pasado como parámetro o crear uno nuevo
     val viewModel = authViewModel ?: viewModel(
         factory = AuthViewModelFactory(context)
     )
 
-    // Obtén dinámicamente el nombre y email, o usa valores por defecto
-    val userName by remember { mutableStateOf(viewModel.getUserName() ?: "Usuario") }
-    val userEmail by remember { mutableStateOf(viewModel.getUserEmail() ?: "email@ejemplo.com") }
+    val userName by remember {
+        derivedStateOf { viewModel.getUserName() ?: "Usuario" }
+    }
+    val userEmail by remember {
+        derivedStateOf { viewModel.getUserEmail() ?: "email@ejemplo.com" }
+    }
 
-    // Contenedor principal con scroll vertical
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp)
             .verticalScroll(scrollState)
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Sección de perfil centrado
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(R.drawable.fotoperfil),
-                contentDescription = "Foto de perfil",
-                modifier = Modifier
-                    .size(96.dp)
-                    .clip(CircleShape) // Imagen circular
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(userName, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                userEmail,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        ProfileSection(
+            userName = userName,
+            userEmail = userEmail
+        )
 
-        // Opciones principales de configuración con toggles y selectores
-        SettingToggle("Modo oscuro", theme.isDark) { theme.toggleTheme() }
-        SettingToggle("Notificaciones", checked = true)
-        SettingSelector("Idioma", selected = "Español")
+        MainSettingsSection(theme = theme)
 
-        Spacer(Modifier.height(32.dp))
+        RoutePreferencesSection()
 
-        // Preferencias específicas de ruta
-        Text("Preferencias de Ruta", style = MaterialTheme.typography.titleSmall)
-        SettingSelector("Tipo de ciclismo", selected = "Montaña")
-        SettingSelector("Nivel de dificultad", selected = "Moderado")
+        CommunitySection()
 
-        // Opciones de comunidad
-        Text("Comunidad", style = MaterialTheme.typography.titleSmall)
-        SettingToggle("Mostrar mi perfil en rutas públicas", checked = true)
-        SettingToggle("Permitir que otros me sigan", checked = true)
+        SecurityAlertsSection()
 
-        // Alertas de seguridad
-        Text("Alertas de Seguridad", style = MaterialTheme.typography.titleSmall)
-        SettingToggle("Notificar sobre rutas peligrosas", checked = true)
+        MapSection()
 
-        // Opciones de mapa
-        Text("Mapa", style = MaterialTheme.typography.titleSmall)
-        SettingToggle("Mostrar talleres automáticamente", checked = true)
+        PrivacySection()
 
-        // Privacidad
-        Text("Privacidad", style = MaterialTheme.typography.titleSmall)
-        SettingToggle("Guardar historial de rutas", checked = true)
-
-        Spacer(Modifier.height(10.dp))
-
-        // Botón para cerrar sesión
-        Button(
-            onClick = {
+        LogoutButton(
+            onLogout = {
                 viewModel.logout()
                 onLogout()
             },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.6f)
-                .height(48.dp)
-                .border(
-                    1.dp,
-                    SolidColor(MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
-                    RoundedCornerShape(24.dp)
-                ),
-            shape = RoundedCornerShape(24.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Text("Cerrar sesión", style = MaterialTheme.typography.bodyMedium)
-        }
+            modifier = Modifier.align(Alignment.CenterHorizontally) // ✅ FIX AQUÍ
+        )
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+    }
+}
+
+@Composable
+private fun ProfileSection(
+    userName: String,
+    userEmail: String
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(R.drawable.fotoperfil),
+            contentDescription = "Foto de perfil",
+            modifier = Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = userName,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = userEmail,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun MainSettingsSection(theme: com.orizzonter.app.core.designsystem.AppTheme) {
+    SettingToggle(
+        title = "Modo oscuro",
+        checked = theme.isDark,
+        onCheckedChange = { theme.toggleTheme() }
+    )
+    SettingToggle(
+        title = "Notificaciones",
+        checked = true
+    )
+    SettingSelector(
+        title = "Idioma",
+        selected = "Español"
+    )
+    Spacer(modifier = Modifier.height(32.dp))
+}
+
+@Composable
+private fun RoutePreferencesSection() {
+    Text(
+        text = "Preferencias de Ruta",
+        style = MaterialTheme.typography.titleSmall
+    )
+    SettingSelector(
+        title = "Tipo de ciclismo",
+        selected = "Montaña"
+    )
+    SettingSelector(
+        title = "Nivel de dificultad",
+        selected = "Moderado"
+    )
+}
+
+@Composable
+private fun CommunitySection() {
+    Text(
+        text = "Comunidad",
+        style = MaterialTheme.typography.titleSmall
+    )
+    SettingToggle(
+        title = "Mostrar mi perfil en rutas públicas",
+        checked = true
+    )
+    SettingToggle(
+        title = "Permitir que otros me sigan",
+        checked = true
+    )
+}
+
+@Composable
+private fun SecurityAlertsSection() {
+    Text(
+        text = "Alertas de Seguridad",
+        style = MaterialTheme.typography.titleSmall
+    )
+    SettingToggle(
+        title = "Notificar sobre rutas peligrosas",
+        checked = true
+    )
+}
+
+@Composable
+private fun MapSection() {
+    Text(
+        text = "Mapa",
+        style = MaterialTheme.typography.titleSmall
+    )
+    SettingToggle(
+        title = "Mostrar talleres automáticamente",
+        checked = true
+    )
+}
+
+@Composable
+private fun PrivacySection() {
+    Text(
+        text = "Privacidad",
+        style = MaterialTheme.typography.titleSmall
+    )
+    SettingToggle(
+        title = "Guardar historial de rutas",
+        checked = true
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+}
+
+@Composable
+private fun LogoutButton(
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier // ✅ Se recibe el modifier
+) {
+    Button(
+        onClick = onLogout,
+        modifier = modifier
+            .fillMaxWidth(0.6f)
+            .height(48.dp)
+            .border(
+                width = 1.dp,
+                brush = SolidColor(MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(24.dp)
+            ),
+        shape = RoundedCornerShape(24.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+            contentColor = MaterialTheme.colorScheme.error
+        )
+    ) {
+        Text(
+            text = "Cerrar sesión",
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 
@@ -140,25 +234,27 @@ fun SettingToggle(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit = {}
 ) {
-    // Fila con título y switch para activar/desactivar opción
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .background(
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.15f),
-                RoundedCornerShape(16.dp)
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(16.dp)
             )
             .border(
-                1.dp,
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                RoundedCornerShape(16.dp)
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = title,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
@@ -173,8 +269,10 @@ fun SettingToggle(
 }
 
 @Composable
-fun SettingSelector(title: String, selected: String) {
-    // Fila con título y opción seleccionada con ícono desplegable
+fun SettingSelector(
+    title: String,
+    selected: String
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,13 +281,16 @@ fun SettingSelector(title: String, selected: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(title)
+            Text(text = title)
             Text(
-                selected,
+                text = selected,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = "Seleccionar opción"
+        )
     }
 }

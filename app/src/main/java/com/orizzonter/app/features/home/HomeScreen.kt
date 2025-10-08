@@ -1,5 +1,6 @@
 package com.orizzonter.app.features.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -21,28 +22,39 @@ import com.orizzonter.app.features.home.screens.settings.SettingsScreen
 fun HomeScreen(
     onLogout: () -> Unit = {}
 ) {
-    // Controlador de navegación para manejar la navegación interna de pestañas
     val navController = rememberNavController()
     val context = LocalContext.current
+
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(context)
     )
 
+    // Bloquear el botón de retroceso físico
+    BackHandler {
+        // No hacer nada - bloquear el retroceso
+        // O puedes mostrar un diálogo de confirmación para salir
+    }
+
     Scaffold(
-        // Barra inferior que recibe el navController para controlar la navegación
-        bottomBar = { BottomBar(navController) }
-    ) { padding ->
-        // Contenedor de navegación interna con rutas definidas
+        bottomBar = {
+            BottomBar(navController = navController)
+        }
+    ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "routes", // Pantalla inicial
-            modifier = Modifier.padding(padding) // Ajusta el padding según Scaffold
+            startDestination = HomeDestination.Routes.route,
+            modifier = Modifier.padding(paddingValues)
         ) {
-            // Cada "composable" es una pantalla vinculada a una ruta específica
-            composable("routes") { RoutesScreen() }
-            composable("services") { ServicesScreen() }
-            composable("social") { CommunityScreen() }
-            composable("settings") {
+            composable(HomeDestination.Routes.route) {
+                RoutesScreen()
+            }
+            composable(HomeDestination.Services.route) {
+                ServicesScreen()
+            }
+            composable(HomeDestination.Social.route) {
+                CommunityScreen()
+            }
+            composable(HomeDestination.Settings.route) {
                 SettingsScreen(
                     onLogout = onLogout,
                     authViewModel = authViewModel
@@ -50,4 +62,11 @@ fun HomeScreen(
             }
         }
     }
+}
+
+sealed class HomeDestination(val route: String) {
+    object Routes : HomeDestination("routes")
+    object Services : HomeDestination("services")
+    object Social : HomeDestination("social")
+    object Settings : HomeDestination("settings")
 }
