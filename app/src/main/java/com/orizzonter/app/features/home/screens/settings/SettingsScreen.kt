@@ -1,6 +1,5 @@
 package com.orizzonter.app.features.home.screens.settings
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,18 +26,22 @@ import com.orizzonter.app.features.auth.viewmodels.AuthViewModel
 import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
 
 @Composable
-fun SettingsScreen(onLogout: () -> Unit = {}) {
+fun SettingsScreen(
+    onLogout: () -> Unit = {},
+    authViewModel: AuthViewModel? = null
+) {
     val theme = LocalAppTheme.current
     val scrollState = rememberScrollState()
-
     val context = LocalContext.current
-    val authViewModel: AuthViewModel = viewModel(
+
+    // Usar el ViewModel pasado como parámetro o crear uno nuevo
+    val viewModel = authViewModel ?: viewModel(
         factory = AuthViewModelFactory(context)
     )
 
     // Obtén dinámicamente el nombre y email, o usa valores por defecto
-    val userName by remember { mutableStateOf(authViewModel.getUserName() ?: "Usuario") }
-    val userEmail by remember { mutableStateOf(authViewModel.getUserEmail() ?: "email@ejemplo.com") }
+    val userName by remember { mutableStateOf(viewModel.getUserName() ?: "Usuario") }
+    val userEmail by remember { mutableStateOf(viewModel.getUserEmail() ?: "email@ejemplo.com") }
 
     // Contenedor principal con scroll vertical
     Column(
@@ -103,10 +106,10 @@ fun SettingsScreen(onLogout: () -> Unit = {}) {
 
         Spacer(Modifier.height(10.dp))
 
-// Botón para cerrar sesión
+        // Botón para cerrar sesión
         Button(
             onClick = {
-                authViewModel.logout()
+                viewModel.logout()
                 onLogout()
             },
             modifier = Modifier
@@ -127,12 +130,9 @@ fun SettingsScreen(onLogout: () -> Unit = {}) {
             Text("Cerrar sesión", style = MaterialTheme.typography.bodyMedium)
         }
 
-
         Spacer(Modifier.height(10.dp))
     }
 }
-
-// ... Aquí mantienes SettingToggle y SettingSelector sin cambios
 
 @Composable
 fun SettingToggle(

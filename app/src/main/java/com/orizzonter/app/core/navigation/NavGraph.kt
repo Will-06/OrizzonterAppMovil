@@ -67,7 +67,14 @@ fun AppNavGraph(context: Context) {
 
         // Home screen
         composable("home") {
-            HomeScreen()
+            HomeScreen(
+                onLogout = {
+                    authViewModel.logout()
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
+            )
         }
 
         // Settings screen (añadido)
@@ -78,7 +85,8 @@ fun AppNavGraph(context: Context) {
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
-                }
+                },
+                authViewModel = authViewModel
             )
         }
     }
