@@ -1,5 +1,6 @@
 package com.orizzonter.app.features.home.screens.settings
 
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,20 +12,33 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.orizzonter.app.R
 import com.orizzonter.app.core.designsystem.LocalAppTheme
+import com.orizzonter.app.features.auth.viewmodels.AuthViewModel
+import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
 
 @Composable
 fun SettingsScreen(onLogout: () -> Unit = {}) {
     val theme = LocalAppTheme.current
     val scrollState = rememberScrollState()
+
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(context)
+    )
+
+    // Obtén dinámicamente el nombre y email, o usa valores por defecto
+    val userName by remember { mutableStateOf(authViewModel.getUserName() ?: "Usuario") }
+    val userEmail by remember { mutableStateOf(authViewModel.getUserEmail() ?: "email@ejemplo.com") }
 
     // Contenedor principal con scroll vertical
     Column(
@@ -50,9 +64,9 @@ fun SettingsScreen(onLogout: () -> Unit = {}) {
                     .clip(CircleShape) // Imagen circular
             )
             Spacer(Modifier.height(8.dp))
-            Text("Orizzonter", style = MaterialTheme.typography.bodyLarge)
+            Text(userName, style = MaterialTheme.typography.bodyLarge)
             Text(
-                "orizzonter@gmail.com",
+                userEmail,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -89,9 +103,12 @@ fun SettingsScreen(onLogout: () -> Unit = {}) {
 
         Spacer(Modifier.height(10.dp))
 
-        // Botón para cerrar sesión
+// Botón para cerrar sesión
         Button(
-            onClick = onLogout,
+            onClick = {
+                authViewModel.logout()
+                onLogout()
+            },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.6f)
@@ -110,9 +127,12 @@ fun SettingsScreen(onLogout: () -> Unit = {}) {
             Text("Cerrar sesión", style = MaterialTheme.typography.bodyMedium)
         }
 
+
         Spacer(Modifier.height(10.dp))
     }
 }
+
+// ... Aquí mantienes SettingToggle y SettingSelector sin cambios
 
 @Composable
 fun SettingToggle(

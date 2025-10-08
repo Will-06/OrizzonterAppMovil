@@ -63,4 +63,23 @@ dependencies {
     androidTestImplementation(libs.espressoCore)
     androidTestImplementation(platform(libs.composeBom))
     androidTestImplementation(libs.composeUiTestJunit4)
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.okhttpLoggingInterceptor)
+
+// Coroutines
+    implementation(libs.coroutinesAndroid)
+
+// Lifecycle
+    implementation(libs.lifecycleViewmodelKtx)
+    implementation(libs.lifecycleRuntimeKtxNew) // Solo si quieres esta versión y no la del alias anterior
+
+// Security Crypto
+    implementation(libs.securityCrypto)
+
+// Navigation (ya tienes uno, solo usar este si quieres forzar 2.7.5)
+    implementation(libs.navigationComposeLegacy)
+
 }

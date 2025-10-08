@@ -1,40 +1,85 @@
 package com.orizzonter.app.core.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.orizzonter.app.core.security.AuthManager
 import com.orizzonter.app.features.auth.*
+import com.orizzonter.app.features.auth.viewmodels.AuthViewModel
+import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
 import com.orizzonter.app.features.home.HomeScreen
+import com.orizzonter.app.features.home.screens.settings.SettingsScreen
 import com.orizzonter.app.features.onboarding.OnboardingScreen
 import com.orizzonter.app.features.splash.SplashScreen
 
 @Composable
-fun AppNavGraph() {
-    // Controlador de navegación para gestionar la navegación entre pantallas
+fun AppNavGraph(context: Context) {
     val navController = rememberNavController()
 
-    // Declaración del grafo de navegación con la pantalla de inicio como "splash"
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModelFactory(context)
+    )
+
+    val startDestination = remember {
+        if (authViewModel.getAuthState().value is AuthManager.AuthState.Authenticated) {
+            "home"
+        } else {
+            "splash"
+        }
+    }
+
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = startDestination
     ) {
-        // Pantalla de presentación
-        composable("splash") { SplashScreen(navController) }
+        // Splash screen
+        composable("splash") {
+            SplashScreen(navController)
+        }
 
-        // Pantalla de bienvenida o introducción (onboarding)
-        composable("onboarding") { OnboardingScreen(navController) }
+        // Onboarding
+        composable("onboarding") {
+            OnboardingScreen(navController)
+        }
 
-        // Pantalla de inicio de sesión
-        composable("login") { LoginScreen(navController) }
+        // Login screen
+        composable("login") {
+            LoginScreen(
+                navController = navController
+            )
+        }
 
-        // Pantalla principal del usuario
-        composable("home") { HomeScreen() }
+        // Create account screen
+        composable("create_account") {
+            CreateAccountScreen(
+                navController = navController
+            )
+        }
 
-        // Pantalla para recuperar contraseña
-        composable("forgot_password") { ForgotPasswordScreen(navController) }
+        // Forgot password screen
+        composable("forgot_password") {
+            ForgotPasswordScreen(navController)
+        }
 
-        // Pantalla para crear una nueva cuenta
-        composable("create_account") { CreateAccountScreen(navController) }
+        // Home screen
+        composable("home") {
+            HomeScreen()
+        }
+
+        // Settings screen (añadido)
+        composable("settings") {
+            SettingsScreen(
+                onLogout = {
+                    authViewModel.logout()
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }

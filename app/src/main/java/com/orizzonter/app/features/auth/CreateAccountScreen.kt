@@ -1,5 +1,6 @@
 package com.orizzonter.app.features.auth
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,10 +11,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.orizzonter.app.features.auth.viewmodels.AuthViewModel
+import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
 
 @Composable
 fun CreateAccountScreen(navController: NavController) {
@@ -21,14 +28,26 @@ fun CreateAccountScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
-    // Contenedor principal con fondo de pantalla
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(context))
+    val registerState by authViewModel.registerState.collectAsState()
+
+    // Navegar a "home" cuando el registro sea exitoso
+    LaunchedEffect(registerState) {
+        if (registerState is AuthViewModel.AuthState.Success) {
+            navController.navigate("home") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Onda decorativa en la parte superior
         WaveShape(
             modifier = Modifier
                 .fillMaxWidth()
@@ -38,7 +57,6 @@ fun CreateAccountScreen(navController: NavController) {
             isTop = true
         )
 
-        // Onda decorativa en la parte inferior
         WaveShape(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,14 +66,12 @@ fun CreateAccountScreen(navController: NavController) {
             isTop = false
         )
 
-        // Contenido central con padding
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Formulario de registro con bordes y fondo semitransparente
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -69,7 +85,6 @@ fun CreateAccountScreen(navController: NavController) {
                     .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Título
                 Text(
                     text = "Crear cuenta",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -78,32 +93,41 @@ fun CreateAccountScreen(navController: NavController) {
 
                 Spacer(Modifier.height(32.dp))
 
-                // Campo: Nombre completo (placeholder visible pero no editable)
+                // Ahora con onTextChange para que sea editable
                 InputField(
                     text = name,
-                    placeholder = "Nombre completo",
+                    onTextChange = { name = it },
+                    placeholder = "Nombre completo"
                 )
 
                 Spacer(Modifier.height(16.dp))
 
-                // Campo: Correo electrónico
                 InputField(
                     text = email,
-                    placeholder = "Correo electrónico",
+                    onTextChange = { email = it },
+                    placeholder = "Correo electrónico"
                 )
 
                 Spacer(Modifier.height(16.dp))
 
-                // Campo: Contraseña (con asteriscos simulados)
                 InputField(
                     text = password,
+                    onTextChange = { password = it },
                     placeholder = "Contraseña",
+                    isPassword = true
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                InputField(
+                    text = confirmPassword,
+                    onTextChange = { confirmPassword = it },
+                    placeholder = "Confirmar contraseña",
                     isPassword = true
                 )
 
                 Spacer(Modifier.height(32.dp))
 
-                // Botón de "Registrarse"
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -115,23 +139,39 @@ fun CreateAccountScreen(navController: NavController) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
                             RoundedCornerShape(16.dp)
                         )
-                        .clickable {
-                            // Acción de registro (aquí navega a "home")
-                            navController.navigate("home")
+                        .clickable(enabled = registerState !is AuthViewModel.AuthState.Loading) {
+                            if (name.isNotBlank() && email.isNotBlank() &&
+                                password.isNotBlank() && confirmPassword.isNotBlank()) {
+                                authViewModel.register(name, email, password, confirmPassword)
+                            }
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Registrarse",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    if (registerState is AuthViewModel.AuthState.Loading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Text(
+                            text = "Registrarse",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(16.dp))
 
-                // Enlace para usuarios que ya tienen cuenta
+                if (registerState is AuthViewModel.AuthState.Error) {
+                    Text(
+                        text = (registerState as AuthViewModel.AuthState.Error).message,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+
                 TextButton(onClick = { navController.popBackStack() }) {
                     Text(
                         "¿Ya tienes cuenta? Inicia sesión",
@@ -147,11 +187,16 @@ fun CreateAccountScreen(navController: NavController) {
 @Composable
 private fun InputField(
     text: String,
+    onTextChange: (String) -> Unit,
     placeholder: String,
     isPassword: Boolean = false
 ) {
-    // Caja de estilo que simula un campo de entrada
-    Box(
+    TextField(
+        value = text,
+        onValueChange = onTextChange,
+        placeholder = { Text(placeholder) },
+        singleLine = true,
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
@@ -162,21 +207,5 @@ private fun InputField(
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
                 RoundedCornerShape(14.dp)
             )
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        // Muestra el texto ingresado o el placeholder
-        Text(
-            text = when {
-                text.isEmpty() -> placeholder
-                isPassword -> "*".repeat(text.length) // Oculta contraseña
-                else -> text
-            },
-            color = if (text.isEmpty())
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            else
-                MaterialTheme.colorScheme.onBackground,
-            fontSize = 16.sp
-        )
-    }
+    )
 }
