@@ -1,5 +1,9 @@
 package com.orizzonter.app.features.home.screens.settings
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,20 +14,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.orizzonter.app.R
 import com.orizzonter.app.core.designsystem.LocalAppTheme
 import com.orizzonter.app.features.auth.viewmodels.AuthViewModel
 import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
+import com.orizzonter.app.features.profile.viewmodels.AvatarViewModel
+import com.orizzonter.app.features.profile.viewmodels.AvatarViewModelFactory
 
 @Composable
 fun SettingsScreen(
@@ -38,11 +47,27 @@ fun SettingsScreen(
         factory = AuthViewModelFactory(context)
     )
 
+    val avatarViewModel: AvatarViewModel = viewModel(
+        factory = AvatarViewModelFactory(context)
+    )
+
     val userName by remember {
         derivedStateOf { viewModel.getUserName() ?: "Usuario" }
     }
     val userEmail by remember {
         derivedStateOf { viewModel.getUserEmail() ?: "email@ejemplo.com" }
+    }
+
+    // Estado para la ruta del avatar que se actualiza automáticamente
+    val currentAvatarPath by avatarViewModel.currentAvatarPath.collectAsState()
+
+    // Launcher para seleccionar imagen
+    val photoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            avatarViewModel.uploadAvatar(it)
+        }
     }
 
     Column(
@@ -53,9 +78,16 @@ fun SettingsScreen(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Sección de perfil
         ProfileSection(
             userName = userName,
-            userEmail = userEmail
+            userEmail = userEmail,
+            avatarPath = currentAvatarPath,
+            onAvatarClick = {
+                photoPicker.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
         )
 
         MainSettingsSection(theme = theme)
@@ -75,7 +107,7 @@ fun SettingsScreen(
                 viewModel.logout()
                 onLogout()
             },
-            modifier = Modifier.align(Alignment.CenterHorizontally) // ✅ FIX AQUÍ
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -85,7 +117,9 @@ fun SettingsScreen(
 @Composable
 private fun ProfileSection(
     userName: String,
-    userEmail: String
+    userEmail: String,
+    avatarPath: String?,
+    onAvatarClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -93,14 +127,59 @@ private fun ProfileSection(
             .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(R.drawable.fotoperfil),
-            contentDescription = "Foto de perfil",
-            modifier = Modifier
-                .size(96.dp)
-                .clip(CircleShape)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        // Contenedor del avatar con botón de cámara
+        Box(
+            modifier = Modifier.size(120.dp)
+        ) {
+            // Avatar (vacío si no hay foto)
+            if (avatarPath != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = avatarPath),
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier
+                        .size(96.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Avatar vacío con estilo
+                Box(
+                    modifier = Modifier
+                        .size(96.dp)
+                        .clip(CircleShape)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            shape = CircleShape
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        )
+                        .align(Alignment.Center)
+                )
+            }
+
+            // Botón de cámara flotante con el mismo color que los switches
+            FloatingActionButton(
+                onClick = onAvatarClick,
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.BottomEnd),
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CameraAlt,
+                    contentDescription = "Cambiar foto de perfil",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = userName,
             style = MaterialTheme.typography.bodyLarge
@@ -203,7 +282,7 @@ private fun PrivacySection() {
 @Composable
 private fun LogoutButton(
     onLogout: () -> Unit,
-    modifier: Modifier = Modifier // ✅ Se recibe el modifier
+    modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onLogout,
