@@ -15,6 +15,7 @@ import com.orizzonter.app.features.auth.viewmodels.AuthViewModelFactory
 import com.orizzonter.app.features.home.components.BottomBar
 import com.orizzonter.app.features.home.screens.community.CommunityScreen
 import com.orizzonter.app.features.home.screens.routes.RoutesScreen
+import com.orizzonter.app.features.home.screens.services.ServiceDetailScreen
 import com.orizzonter.app.features.home.screens.services.ServicesScreen
 import com.orizzonter.app.features.home.screens.settings.SettingsScreen
 
@@ -48,8 +49,8 @@ fun HomeScreen(
             composable(HomeDestination.Routes.route) {
                 RoutesScreen()
             }
-            composable(HomeDestination.Services.route) {
-                ServicesScreen()
+            composable("services") {
+                ServicesScreen(navController)
             }
             composable(HomeDestination.Social.route) {
                 CommunityScreen()
@@ -59,6 +60,13 @@ fun HomeScreen(
                     onLogout = onLogout,
                     authViewModel = authViewModel
                 )
+
+            }
+            // Ruta de detalles del servicio
+            composable("serviceDetail/{title}/{description}") { backStackEntry ->
+                val title = backStackEntry.arguments?.getString("title") ?: ""
+                val description = backStackEntry.arguments?.getString("description") ?: ""
+                ServiceDetailScreen(title, description, navController)
             }
         }
     }

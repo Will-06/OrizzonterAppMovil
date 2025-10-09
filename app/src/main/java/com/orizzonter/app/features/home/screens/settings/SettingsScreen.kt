@@ -131,7 +131,7 @@ private fun ProfileSection(
         Box(
             modifier = Modifier.size(120.dp)
         ) {
-            // Avatar (vacío si no hay foto)
+            // Avatar
             if (avatarPath != null) {
                 Image(
                     painter = rememberAsyncImagePainter(model = avatarPath),
@@ -143,25 +143,19 @@ private fun ProfileSection(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Avatar vacío con estilo
-                Box(
+                // Avatar por defecto desde drawable
+                Image(
+                    painter = painterResource(id = R.drawable.perfil1),
+                    contentDescription = "Foto de perfil por defecto",
                     modifier = Modifier
                         .size(96.dp)
                         .clip(CircleShape)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            shape = CircleShape
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                            shape = CircleShape
-                        )
-                        .align(Alignment.Center)
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Crop
                 )
             }
 
-            // Botón de cámara flotante con el mismo color que los switches
+            // Botón de cámara flotante
             FloatingActionButton(
                 onClick = onAvatarClick,
                 modifier = Modifier
