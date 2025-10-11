@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="OrizzonterApp.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-10-11T16:59:15.706823200Z">
+        <DropdownSelection timestamp="2025-10-11T17:53:28.047381600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=RF8R90A1HBV" />

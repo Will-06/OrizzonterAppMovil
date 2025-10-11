@@ -34,12 +34,13 @@ fun RoutesScreen() {
 
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
-            center(Point.fromLngLat(-76.297, 2.451)) // Popayán
-            zoom(12.0)
+            center(Point.fromLngLat(-76.6062, 2.4426)) // Centro histórico de Popayán
+            zoom(12.0) // Un poco más de zoom para ver mejor la ciudad
             pitch(0.0)
             bearing(0.0)
         }
     }
+
 
     Box(
         modifier = Modifier
@@ -58,7 +59,7 @@ fun RoutesScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+                .padding(top = 24.dp, start = 4.dp, end = 24.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             TextField(
@@ -69,7 +70,8 @@ fun RoutesScreen() {
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar")
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.8f)
+                    // <-- Cambia aquí el ancho máximo
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
                     .border(1.dp, onSurfaceAlpha, shape)
@@ -88,6 +90,7 @@ fun RoutesScreen() {
                 shape = shape,
                 singleLine = true
             )
+
         }
     }
 }

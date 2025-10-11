@@ -11,7 +11,6 @@ android {
     defaultConfig {
         applicationId = "com.orizzonter.app"
         minSdk = 29
-        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -75,16 +74,15 @@ dependencies {
 
 // Lifecycle
     implementation(libs.lifecycleViewmodelKtx)
-    implementation(libs.lifecycleRuntimeKtxNew) // Solo si quieres esta versión y no la del alias anterior
 
 // Security Crypto
     implementation(libs.securityCrypto)
 
 // Navigation (ya tienes uno, solo usar este si quieres forzar 2.7.5)
     implementation(libs.navigationComposeLegacy)
-//Mapbox
+
+    //Mapbox
     implementation(libs.mapboxSdk)
     implementation(libs.mapboxCompose)
-    implementation(libs.mapboxSearchUi)
 
 }
