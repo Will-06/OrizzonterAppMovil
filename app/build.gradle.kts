@@ -11,6 +11,7 @@ android {
     defaultConfig {
         applicationId = "com.orizzonter.app"
         minSdk = 29
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -81,5 +82,9 @@ dependencies {
 
 // Navigation (ya tienes uno, solo usar este si quieres forzar 2.7.5)
     implementation(libs.navigationComposeLegacy)
+//Mapbox
+    implementation(libs.mapboxSdk)
+    implementation(libs.mapboxCompose)
+    implementation(libs.mapboxSearchUi)
 
 }

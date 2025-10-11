@@ -34,7 +34,8 @@ securityCrypto = "1.1.0-alpha06"
 
 # Navigation (ya tienes una versión más nueva, opcional mantener ambas)
 navigationLegacy = "2.7.5"
-
+mapbox = "11.15.2"
+mapbox-search = "2.7.0"
 
 [libraries]
 # Jetpack Compose
@@ -94,6 +95,9 @@ securityCrypto = { group = "androidx.security", name = "security-crypto", versio
 
 # Navigation alternativo
 navigationComposeLegacy = { module = "androidx.navigation:navigation-compose", version.ref = "navigationLegacy" }
+mapboxSdk = { group = "com.mapbox.maps", name = "android", version.ref = "mapbox" }
+mapboxCompose = { group = "com.mapbox.extension", name = "maps-compose", version.ref = "mapbox" }
+mapboxSearchUi = { group = "com.mapbox.search", name = "mapbox-search-android-ui", version.ref = "mapbox-search" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
