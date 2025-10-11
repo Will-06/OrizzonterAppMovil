@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.orizzonter.app"
-        minSdk = 29
+        minSdk = 21
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -81,5 +81,12 @@ dependencies {
 
 // Navigation (ya tienes uno, solo usar este si quieres forzar 2.7.5)
     implementation(libs.navigationComposeLegacy)
+
+//Mapbox
+    implementation("com.mapbox.maps:android-ndk27:11.15.2")
+    implementation("com.mapbox.extension:maps-compose:11.5.0")
+        // if your app does not require 16 KB page size support, the default dependency without -ndk27 can be used
+        // implementation("com.mapbox.maps:android:11.15.2")
+
 
 }

@@ -1,7 +1,6 @@
 package com.orizzonter.app.features.home.screens.routes
 
-// Importación de elementos de UI y diseño
-import androidx.compose.foundation.Image
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,39 +13,79 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.orizzonter.app.R
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutesScreen() {
-    // Definición de bordes y colores
+    val context = LocalContext.current
     val cornerRadius = 24.dp
     val shape = RoundedCornerShape(cornerRadius)
     val onSurfaceAlpha = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
 
-    // Contenedor principal
+    // Estado para el mapa
+    var isMapInitialized by remember { mutableStateOf(false) }
+    var hasError by remember { mutableStateOf(false) }
+
+    // Inicializar Mapbox de forma segura
+    LaunchedEffect(Unit) {
+        try {
+            // En versiones recientes, Mapbox se inicializa automáticamente
+            // con el meta-data del AndroidManifest.xml
+            isMapInitialized = true
+        } catch (e: Exception) {
+            hasError = true
+            e.printStackTrace()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(3.dp)
     ) {
-        // Imagen de fondo (mapa)
-        Image(
-            painter = painterResource(id = R.drawable.glasssmap2),
-            contentDescription = "Mapa de fondo",
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(32.dp)),
-            contentScale = ContentScale.Crop
-        )
+        // 🌍 MAPBOX MAP - Solo mostrar si está inicializado
+        if (isMapInitialized && !hasError) {
+            MapboxMap(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(32.dp)),
+                mapViewportState = rememberMapViewportState {
+                    setCameraOptions {
+                        zoom(2.0)
+                        center(Point.fromLngLat(-98.0, 39.5))
+                        pitch(0.0)
+                        bearing(0.0)
+                    }
+                }
+            )
+        } else {
+            // Loading o fallback mientras se inicializa
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.LightGray.copy(alpha = 0.3f))
+                    .clip(RoundedCornerShape(32.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (hasError) {
+                    Text("Error cargando el mapa", color = Color.Red)
+                } else {
+                    CircularProgressIndicator()
+                }
+            }
+        }
 
-        // Campo de búsqueda en la parte superior
+        // El resto de tu código permanece igual...
+        // 🔎 Campo de búsqueda
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -55,7 +94,6 @@ fun RoutesScreen() {
         ) {
             var searchQuery by remember { mutableStateOf("") }
 
-            // TextField para buscar rutas
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -67,8 +105,7 @@ fun RoutesScreen() {
                     .fillMaxWidth()
                     .clip(shape)
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
-                    .border(1.dp, onSurfaceAlpha, shape)
-                    .padding(horizontal = 4.dp),
+                    .border(1.dp, onSurfaceAlpha, shape),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -85,45 +122,5 @@ fun RoutesScreen() {
             )
         }
 
-        // Mensaje central informando funcionalidad futura
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(70.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f), shape)
-                    .padding(23.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Título de sección
-                Text(
-                    text = "Rutas",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = onBackgroundColor
-                )
-
-                Spacer(modifier = Modifier.height(17.dp))
-
-                // Texto informativo
-                Text(
-                    text = "Próximamente podrás consultar tus rutas desde aquí.",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 18.sp,
-                        lineHeight = 24.sp
-                    ),
-                    color = onBackgroundColor,
-                    modifier = Modifier
-                        .fillMaxWidth(0.85f)
-                        .align(Alignment.CenterHorizontally),
-                    textAlign = TextAlign.Center
-                )
-            }
         }
     }
-}
